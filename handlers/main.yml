@@ -1,0 +1,10 @@
+---
+# file: roles/netdata/handlers/main.yml
+
+- name: "Include NetData to Boot-List"
+  command: update-rc.d netdata defaults
+
+- name: "Start NetData"
+  service:
+    name='netdata'
+    state='started'

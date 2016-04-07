@@ -1,0 +1,41 @@
+---
+# file: roles/netdata/tasks/main.yml
+
+- name: "Install required packages"
+  apt:
+    pkg={{ item }}
+    state=installed
+    update_cache=yes
+  with_items:
+    - zlib1g-dev
+    - gcc
+    - make
+    - git
+    - autoconf
+    - autogen
+    - automake
+    - pkg-config
+
+- name: "Clone NetData"
+  git:
+    accept_hostkey: true
+    repo: "https://github.com/firehol/netdata.git"
+    dest: "/opt/netdata"
+    force: yes
+    depth: 1
+
+- name: "Install and configure NetData"
+  shell: ./netdata-installer.sh --dont-wait
+  args:
+    chdir: /opt/netdata
+
+- name: "Install startup script"
+  template:
+    src=etc_init_d_netdata
+    dest=/etc/init.d/netdata
+    owner=root
+    group=root
+    mode=755
+  notify:
+    - "Include NetData to Boot-List"
+    - "Start NetData"
