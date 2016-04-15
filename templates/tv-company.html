@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Tineon NetData</title>
+
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+	<script>
+	var netdataTheme = 'slate';
+	</script>
+	<script type="text/javascript" src="dashboard.js"></script>
+
+	<script>
+	NETDATA.options.current.destroy_on_hide = true;
+	NETDATA.options.current.eliminate_zero_dimensions = true;
+	NETDATA.options.current.stop_updates_when_focus_is_lost = false;
+	var RELOAD_EVERY = 5;
+	setTimeout(function(){
+		location.reload();
+	}, RELOAD_EVERY * 60 * 1000);
+	</script>
+
+</head>
+<body>
+
+<div style="width: 100%; text-align: center; display: inline-block;">
+{% for host in groups.all %}
+	<a href="http://{{ host }}:19999" target="_blank">
+	<div data-netdata="system.load"
+			data-host="http://{{ host }}:19999"
+			data-title="{{ host }}"
+			data-chart-library="gauge"
+			data-width="10%"
+			data-height="100px"
+			></div></a>
+{% endfor %}
+</div>
+</body>
+</html>

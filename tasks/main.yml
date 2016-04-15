@@ -23,11 +23,8 @@
     dest: "/opt/netdata"
     force: yes
     depth: 1
-
-- name: "Install and configure NetData"
-  shell: ./netdata-installer.sh --dont-wait
-  args:
-    chdir: /opt/netdata
+  notify:
+    - "Install and configure NetData"
 
 - name: "Install startup script"
   template:
@@ -39,3 +36,13 @@
   notify:
     - "Include NetData to Boot-List"
     - "Start NetData"
+
+- name: "Install local dashboard"
+  template:
+    src=tv-company.html
+    dest=/usr/share/netdata/web/{{ lookup('env','ANSIBLE_COMPANY') }}.html
+    owner=netdata
+    group=netdata
+    mode=644
+  delegate_to: localhost
+  run_once: true
