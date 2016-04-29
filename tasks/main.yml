@@ -39,6 +39,15 @@
     - "Include NetData to Boot-List"
     - "Start NetData"
 
+- name: "Check if local netdata installation exists"
+  shell: ls /usr/share/netdata/web/index.html
+  delegate_to: localhost
+  run_once: true
+  register: netdata_local_available
+  failed_when: false
+  changed_when: false
+  tags: 'LocalConfig'
+
 - name: "Install local dashboard"
   template:
     src=tv-company.html
@@ -48,6 +57,8 @@
     mode=644
   delegate_to: localhost
   run_once: true
+  tags: 'LocalConfig'
+  when: netdata_local_available.stdout == '/usr/share/netdata/web/index.html'
 
 - name: "Configure FireQoS"
   template:

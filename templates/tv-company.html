@@ -18,11 +18,7 @@
 	<script>
 	NETDATA.options.current.destroy_on_hide = true;
 	NETDATA.options.current.eliminate_zero_dimensions = true;
-	NETDATA.options.current.stop_updates_when_focus_is_lost = false;
-	var RELOAD_EVERY = 5;
-	setTimeout(function(){
-		location.reload();
-	}, RELOAD_EVERY * 60 * 1000);
+	NETDATA.options.current.stop_updates_when_focus_is_lost = true;
 	</script>
 
 </head>
