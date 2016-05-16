@@ -15,6 +15,7 @@
     - autogen
     - automake
     - pkg-config
+    - uuid-dev
     #FireQOS available from 15.04
     #- firehol
 
