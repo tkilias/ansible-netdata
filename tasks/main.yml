@@ -1,52 +1,60 @@
 ---
 # file: roles/netdata/tasks/main.yml
 
-- name: "Install required packages"
-  apt:
-    pkg={{ item }}
-    state=installed
-    update_cache=yes
-  with_items:
-    - zlib1g-dev
-    - gcc
-    - make
-    - git
-    - autoconf
-    - autogen
-    - automake
-    - pkg-config
-    - uuid-dev
-    #FireQOS available from 15.04
-    #- firehol
+- name: "NetData Role"
+  set_fact: role_netdata_started=true
+  tags: always
 
-- name: "Clone NetData"
-  git:
-    accept_hostkey: true
-    repo: "https://github.com/firehol/netdata.git"
-    dest: "/opt/netdata"
-    force: yes
-    depth: 1
-  notify:
-    - "Install and configure NetData"
+- block:
 
-- name: "Install startup script"
-  template:
-    src=etc_init_d_netdata
-    dest=/etc/init.d/netdata
-    owner=root
-    group=root
-    mode=755
-  notify:
-    - "Include NetData to Boot-List"
-    - "Start NetData"
+  - name: "Install required packages"
+    apt:
+      pkg={{ item }}
+      state=installed
+      update_cache=yes
+    with_items:
+      - zlib1g-dev
+      - gcc
+      - make
+      - git
+      - autoconf
+      - autogen
+      - automake
+      - pkg-config
+      - uuid-dev
+      #FireQOS available from 15.04
+      #- firehol
 
-- name: "Configure FireQoS"
-  template:
-    src=etc_fireqos_fireqos.conf
-    dest=/etc/fireqos/fireqos.conf
-    owner=root
-    group=root
-    mode=755
-  when: false
-  notify:
-    - "Start FireQoS"
+  - name: "Clone NetData"
+    git:
+      accept_hostkey: true
+      repo: "https://github.com/firehol/netdata.git"
+      dest: "/opt/netdata"
+      force: yes
+      depth: 1
+    notify:
+      - "Install and configure NetData"
+
+  - name: "Install startup script"
+    template:
+      src=etc_init_d_netdata
+      dest=/etc/init.d/netdata
+      owner=root
+      group=root
+      mode=755
+    notify:
+      - "Include NetData to Boot-List"
+      - "Start NetData"
+
+  - name: "Configure FireQoS"
+    template:
+      src=etc_fireqos_fireqos.conf
+      dest=/etc/fireqos/fireqos.conf
+      owner=root
+      group=root
+      mode=755
+    when: false
+    notify:
+      - "Start FireQoS"
+
+  when: '"netdata" not in excluded_roles'
