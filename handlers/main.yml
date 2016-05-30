@@ -13,3 +13,8 @@
   service:
     name='netdata'
     state='started'
+
+- name: "Re-start NetData"
+  service:
+    name='netdata'
+    state='restarted'

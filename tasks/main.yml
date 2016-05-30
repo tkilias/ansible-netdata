@@ -33,6 +33,7 @@
       force: yes
     notify:
       - "Install and configure NetData"
+      - "Re-start NetData"
 
   - name: "Install startup script"
     template:
