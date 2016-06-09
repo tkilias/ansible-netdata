@@ -25,6 +25,11 @@
       #FireQOS available from 15.04
       #- firehol
 
+  - name: "Ensure Directory"
+    file:
+      path='/etc/netdata'
+      state='directory'
+
   - name: "Clone NetData"
     git:
       accept_hostkey: true
@@ -45,6 +50,20 @@
     notify:
       - "Include NetData to Boot-List"
       - "Start NetData"
+
+  - name: "Configure Registry"
+    ini_file:
+      dest='/etc/netdata/netdata.conf'
+      section='registry'
+      option='{{ item.option }}'
+      value='{{ item.value }}'
+    with_items:
+      - option: 'enabled'
+        value: '{{ (netdata_registry|default("pmon1") == inventory_hostname)|ternary("yes", "no") }}'
+      - option: 'registry to announce'
+        value: 'http://{{ netdata_registry|default("pmon1") }}:19999'
+    notify:
+      - "Re-start NetData"
 
   - name: "Configure FireQoS"
     template:
