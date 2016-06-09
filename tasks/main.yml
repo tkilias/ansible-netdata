@@ -77,15 +77,4 @@
     notify:
       - "Re-start NetData"
 
-  - name: "Configure FireQoS"
-    template:
-      src=etc_fireqos_fireqos.conf
-      dest=/etc/fireqos/fireqos.conf
-      owner=root
-      group=root
-      mode=755
-    when: false
-    notify:
-      - "Start FireQoS"
-
   when: '"netdata" not in excluded_roles'
