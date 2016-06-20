@@ -65,6 +65,10 @@
     notify:
       - "Re-start NetData"
 
+  - name: "Check if KSM is available"
+    stat: path='/sys/kernel/mm/ksm'
+    register: ksm
+
   # Note: copy module doesn't work here because parent directory /sys
   # is not writable, not even by root
   - name: "Configure KSM"
@@ -74,6 +78,7 @@
         value: '1'
       - file: 'sleep_millisecs'
         value: '1000'
+    when: ksm.stat.exists
     notify:
       - "Re-start NetData"
 
