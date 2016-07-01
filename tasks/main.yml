@@ -22,6 +22,8 @@
       - automake
       - pkg-config
       - uuid-dev
+      - python-dev
+      - python-yaml
       #FireQOS available from 15.04
       #- firehol
 
@@ -62,6 +64,28 @@
         value: '{{ (netdata_registry|default("pmon1") == inventory_hostname)|ternary("yes", "no") }}'
       - option: 'registry to announce'
         value: 'http://{{ netdata_registry|default("pmon1") }}:19999'
+    notify:
+      - "Re-start NetData"
+
+  - name: "Configure Python Plugin"
+    template:
+      src='python.d.conf'
+      dest='/etc/netdata/python.d.conf'
+      owner='netdata'
+      group='netdata'
+      mode=644
+    notify:
+      - "Re-start NetData"
+
+  - name: "Configure Plugins"
+    template:
+      src='{{ item }}.conf'
+      dest='/etc/netdata/python.d/{{ item }}.conf'
+      owner='netdata'
+      group='netdata'
+      mode=644
+    with_items:
+      - 'mysql'
     notify:
       - "Re-start NetData"
 
