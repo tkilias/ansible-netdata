@@ -53,6 +53,14 @@
       - "Include NetData to Boot-List"
       - "Start NetData"
 
+  - name: "Install logrotate script"
+    template:
+      src=etc_logrotate_d_netdata
+      dest=/etc/logrotate.d/netdata
+      owner=root
+      group=root
+      mode=644
+
   - name: "Configure Registry"
     ini_file:
       dest='/etc/netdata/netdata.conf'
