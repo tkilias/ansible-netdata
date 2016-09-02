@@ -6,8 +6,7 @@
   delaycompress
   notifempty
   sharedscripts
-  create 640 netdata netdata
   postrotate
-    /usr/sbin/service netdata restart >/dev/null
+    /bin/kill -HUP `pidof netdata 2>/dev/null` 2>/dev/null || true
   endscript
 }
