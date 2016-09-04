@@ -51,7 +51,7 @@
       mode=755
     notify:
       - "Include NetData to Boot-List"
-      - "Start NetData"
+      - "Re-start NetData"
 
   - name: "Install logrotate script"
     template:
@@ -79,8 +79,8 @@
     template:
       src='python.d.conf'
       dest='/etc/netdata/python.d.conf'
-      owner='netdata'
-      group='netdata'
+      owner='root'
+      group='root'
       mode=644
     notify:
       - "Re-start NetData"
@@ -89,8 +89,8 @@
     template:
       src='{{ item }}.conf'
       dest='/etc/netdata/python.d/{{ item }}.conf'
-      owner='netdata'
-      group='netdata'
+      owner='root'
+      group='root'
       mode=644
     with_items:
       - 'mysql'

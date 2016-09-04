@@ -9,11 +9,6 @@
 - name: "Include NetData to Boot-List"
   command: update-rc.d netdata defaults
 
-- name: "Start NetData"
-  service:
-    name='netdata'
-    state='started'
-
 - name: "Re-start NetData"
   service:
     name='netdata'
