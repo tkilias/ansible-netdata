@@ -29,7 +29,7 @@
 
   - name: "Ensure Directory"
     file:
-      path='/etc/netdata'
+      path='/etc/netdata/python.d'
       state='directory'
 
   - name: "Clone NetData"
