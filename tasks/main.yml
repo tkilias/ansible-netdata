@@ -77,11 +77,15 @@
 
   - name: "Configure Python Plugin"
     template:
-      src='python.d.conf'
-      dest='/etc/netdata/python.d.conf'
+      src='{{ item }}'
+      dest='/etc/netdata/{{ item }}'
       owner='root'
       group='root'
       mode=644
+      backup=yes
+    with_items:
+      - 'python.d.conf'
+      - 'health_alarm_notify.conf'
     notify:
       - "Re-start NetData"
 
