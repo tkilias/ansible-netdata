@@ -75,7 +75,7 @@
     notify:
       - "Re-start NetData"
 
-  - name: "Configure Python Plugin"
+  - name: "Configure NetData"
     template:
       src='{{ item }}'
       dest='/etc/netdata/{{ item }}'
