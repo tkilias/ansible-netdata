@@ -1,0 +1,18 @@
+---
+# file: roles/netdata/tasks/install.yml
+
+- name: "Clone NetData"
+  git:
+    accept_hostkey: true
+    repo: "https://github.com/firehol/netdata.git"
+    dest: "/opt/netdata"
+    force: yes
+  register: netdata_clone
+  notify:
+    - "Re-start NetData"
+
+- name: "Install and configure NetData"
+  shell: ./netdata-installer.sh --dont-wait
+  args:
+    chdir: /opt/netdata
+  when: netdata_clone.changed

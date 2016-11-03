@@ -1,11 +1,6 @@
 ---
 # file: roles/netdata/handlers/main.yml
 
-- name: "Install and configure NetData"
-  shell: ./netdata-installer.sh --dont-wait
-  args:
-    chdir: /opt/netdata
-
 - name: "Include NetData to Boot-List"
   command: update-rc.d netdata defaults
 

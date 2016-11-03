@@ -32,15 +32,7 @@
       path='/etc/netdata/python.d'
       state='directory'
 
-  - name: "Clone NetData"
-    git:
-      accept_hostkey: true
-      repo: "https://github.com/firehol/netdata.git"
-      dest: "/opt/netdata"
-      force: yes
-    notify:
-      - "Install and configure NetData"
-      - "Re-start NetData"
+  - include: install.yml
 
   - name: "Install startup script"
     template:
