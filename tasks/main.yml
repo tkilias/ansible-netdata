@@ -56,6 +56,7 @@
   - name: "Configure Registry"
     ini_file:
       dest='/etc/netdata/netdata.conf'
+      create=yes
       section='registry'
       option='{{ item.option }}'
       value='{{ item.value }}'
