@@ -9,7 +9,7 @@
     force: yes
   register: netdata_clone
   notify:
-    - "Re-start NetData"
+    - "Restart NetData"
 
 - name: "Install and configure NetData"
   shell: ./netdata-installer.sh --dont-wait

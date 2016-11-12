@@ -27,6 +27,17 @@
       #FireQOS available from 15.04
       #- firehol
 
+  - name: "Remove existing components"
+    file:
+      path: '{{ item }}'
+      state: 'absent'
+    with_items:
+      - '/opt/netdata'
+      - '/etc/netdata'
+      - '/etc/init.d/netdata'
+      - '/etc/logrotate.d/netdata'
+    when: netdata_force_reset
+
   - name: "Ensure Directory"
     file:
       path='/etc/netdata/python.d'
@@ -34,24 +45,11 @@
 
   - include: install.yml
 
-  - name: "Install startup script"
-    template:
-      src=etc_init_d_netdata
-      dest=/etc/init.d/netdata
-      owner=root
-      group=root
-      mode=755
-    notify:
-      - "Include NetData to Boot-List"
-      - "Re-start NetData"
-
-  - name: "Install logrotate script"
-    template:
-      src=etc_logrotate_d_netdata
-      dest=/etc/logrotate.d/netdata
-      owner=root
-      group=root
-      mode=644
+  - name: "Add User to Admins"
+    user:
+      name: 'netdata'
+      groups: 'adm'
+      append: yes
 
   - name: "Configure Registry"
     ini_file:
@@ -66,7 +64,7 @@
       - option: 'registry to announce'
         value: 'http://{{ netdata_registry|default("pmon1") }}:19999'
     notify:
-      - "Re-start NetData"
+      - "Restart NetData"
 
   - name: "Configure NetData"
     template:
@@ -77,22 +75,47 @@
       mode=644
       backup=yes
     with_items:
-      - 'python.d.conf'
       - 'health_alarm_notify.conf'
     notify:
-      - "Re-start NetData"
+      - "Restart NetData"
 
-  - name: "Configure Plugins"
-    template:
-      src='{{ item }}.conf'
-      dest='/etc/netdata/python.d/{{ item }}.conf'
-      owner='root'
-      group='root'
-      mode=644
-    with_items:
-      - 'mysql'
+  - name: "Patch Startup Script"
+    lineinfile:
+      dest: '/etc/init.d/netdata'
+      regexp: 'killproc -p \$\{PIDFILE\} \$DAEMON_PATH/\$DAEMON'
+      line: '        killproc -p ${PIDFILE} $DAEMON_PATH/$DAEMON && sleep 1'
+    when: ansible_lsb.major_release == '12'
+
+  - block:
+
+    - name: "Enable Apache Status Module"
+      apache2_module:
+        name=status
+        state=present
+      notify: "Restart Apache"
+
+    - name: "Apache Status Site"
+      template:
+        src=apache.conf
+        dest=/etc/apache2/sites-available/status{{ apache_conf_ext|default('.conf') }}
+        owner=root
+        group=root
+        mode=0644
+      notify: "Restart Apache"
+
+    - name: "Enable Apache Status Site"
+      command: a2ensite status creates=/etc/apache2/sites-enabled/status{{ apache_conf_ext|default('.conf') }}
+      notify: "Restart Apache"
+
+    when: groups['webserver'] is defined and inventory_hostname in groups['webserver']
+
+  - name: "Configure Plugin: MySQL"
+    replace:
+      dest: '/etc/netdata/python.d/mysql.conf'
+      regexp: '#[\s]*pass[\s]*:[\s]*'''''
+      replace: 'pass     : ''{{ mysql_root_password|default("root") }}'''
     notify:
-      - "Re-start NetData"
+      - "Restart NetData"
 
   - name: "Check if KSM is available"
     stat: path='/sys/kernel/mm/ksm'
@@ -109,6 +132,6 @@
         value: '1000'
     when: ksm.stat.exists
     notify:
-      - "Re-start NetData"
+      - "Restart NetData"
 
   when: '"netdata" not in excluded_roles'

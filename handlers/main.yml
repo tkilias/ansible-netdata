@@ -4,7 +4,12 @@
 - name: "Include NetData to Boot-List"
   command: update-rc.d netdata defaults
 
-- name: "Re-start NetData"
+- name: "Restart NetData"
   service:
     name='netdata'
+    state='restarted'
+
+- name: "Restart Apache"
+  service:
+    name='apache2'
     state='restarted'
