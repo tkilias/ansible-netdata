@@ -16,3 +16,15 @@
   args:
     chdir: /opt/netdata
   when: netdata_clone.changed
+
+- name: "Copy additional files"
+  copy:
+    src: '{{ item.filename }}'
+    dest: '{{ item.path }}/{{ item.filename }}'
+  with_items:
+    - filename: 'haproxy.chart.py'
+      path: '/usr/libexec/netdata/python.d'
+    - filename: 'haproxy.conf'
+      path: '/etc/netdata/python.d'
+  notify:
+    - "Restart NetData"
