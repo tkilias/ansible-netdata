@@ -117,6 +117,14 @@
     notify:
       - "Restart NetData"
 
+  - name: "Configure Alert: Softnet"
+    replace:
+      dest: '/etc/netdata/health.d/softnet.conf'
+      regexp: 'warn: \$this > \(\(\$status >= \$WARNING\)  \? \(0\) : \(10\)\)'
+      replace: 'warn: $this > (($status >= $WARNING)  ? (0) : (50))'
+    notify:
+      - "Restart NetData"
+
   - name: "Check if KSM is available"
     stat: path='/sys/kernel/mm/ksm'
     register: ksm
