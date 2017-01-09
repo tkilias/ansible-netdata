@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 # Description: haproxy netdata python.d module
-# Author: Pawel Krupa (paulfantom)
+# Author: l2isbad
 
-from base import SocketService, UrlService
-import csv
+from base import UrlService
 
 # default module values (can be overridden per job in `config`)
 # update_every = 2
@@ -11,162 +10,101 @@ priority = 60000
 retries = 60
 
 # charts order (can be overridden if you want less charts, or different order)
-ORDER = ['qcur', 'scur', 'bin', 'bout']
-POSITION = ['2', '4', '8', '9']
-
+ORDER = ['fbin', 'fbout', 'fscur', 'fqcur', 'bbin', 'bbout', 'bscur', 'bqcur']
 CHARTS = {
-    'qcur': {
-        'options': ["", "Current queue", 'per sec', '', '', 'line'],
+    'fbin': {
+        'options': [None, "Bytes in", "bytes/s", 'Frontend', 'f.bin', 'line'],
         'lines': [
-            ['name', None, 'incremental']
         ]},
-    'scur': {
-        'options': ["", "Current session rate", 'per sec', '', '', 'line'],
+    'fbout': {
+        'options': [None, "Bytes out", "bytes/s", 'Frontend', 'f.bout', 'line'],
         'lines': [
-            ['name', None, 'incremental']
         ]},
-    'bin': {
-        'options': ["", "Bytes in", 'kilobytes/s', '', '', 'line'],
+    'fscur': {
+        'options': [None, "Sessions active", "sessions", 'Frontend', 'f.scur', 'line'],
         'lines': [
-            ['name', None, 'incremental', 1, 1024]
         ]},
-    'bout': {
-        'options': ["", "Bytes out", 'kilobytes/s', '', '', 'line'],
+    'fqcur': {
+        'options': [None, "Session in queue", "sessions", 'Frontend', 'f.qcur', 'line'],
         'lines': [
-            ['name', None, 'incremental', 1, 1024]
         ]},
+    'bbin': {
+        'options': [None, "Bytes in", "bytes/s", 'Backend', 'b.bin', 'line'],
+        'lines': [
+        ]},
+    'bbout': {
+        'options': [None, "Bytes out", "bytes/s", 'Backend', 'b.bout', 'line'],
+        'lines': [
+        ]},
+    'bscur': {
+        'options': [None, "Sessions active", "sessions", 'Backend', 'b.scur', 'line'],
+        'lines': [
+        ]},
+    'bqcur': {
+        'options': [None, "Sessions in queue", "sessions", 'Backend', 'b.qcur', 'line'],
+        'lines': [
+        ]}
 }
 
 
-class Service(SocketService, UrlService):
+class Service(UrlService):
     def __init__(self, configuration=None, name=None):
-        self.use_socket = 'unix_socket' in configuration
-        if self.use_socket:
-            SocketService.__init__(self, configuration=configuration, name=name)
-            self.request = "show stat\r\n"
-        else:
-            UrlService.__init__(self, configuration=configuration, name=name)
-            if not self.url.endswith("/;csv;norefresh"):
-                self.url += "/;csv;norefresh"
+        UrlService.__init__(self, configuration=configuration, name=name)
+        self.url = "http://127.0.0.1:7000/haproxy_stats;csv"
+        self.order = ORDER
+        self.order_front = [_ for _ in ORDER if _.startswith('f')]
+        self.order_back = [_ for _ in ORDER if _.startswith('b')]
+        self.definitions = CHARTS
+        self.charts = True
 
-        # self.order and self.definitions are created with _create_definitions method
-        # self.order = ORDER
-        # self.definitions = CHARTS
-        self.order = []
-        self.definitions = {}
-
-    def _get_parsed_data(self):
-        """
-        Retrieve and parse raw data
-        :return: dict
-        """
-        try:
-            if self.use_socket:
-                raw = SocketService._get_raw_data(self)
-            else:
-                raw = UrlService._get_raw_data(self)
-        except (ValueError, AttributeError):
-            return None
-
-        if raw is None:
-            return None
-
-        try:
-            # return [row for row in csv.reader(raw.splitlines(), delimiter=',')]
-            return list(csv.reader(raw.splitlines(), delimiter=','))
-        except Exception as e:
-            self.debug(str(e))
-            return None
+    def create_charts(self, front_ends, back_ends):
+        for chart in self.order_front:
+            for _ in range(len(front_ends)):
+                self.definitions[chart]['lines'].append(['_'.join([chart, front_ends[_]['# pxname']]),
+                                                         front_ends[_]['# pxname'],
+                                                         'incremental' if chart.startswith(
+                                                             ('fb', 'bb')) else 'absolute'])
+        for chart in self.order_back:
+            for _ in range(len(back_ends)):
+                self.definitions[chart]['lines'].append(['_'.join([chart, back_ends[_]['# pxname']]),
+                                                         back_ends[_]['# pxname'],
+                                                         'incremental' if chart.startswith(
+                                                             ('fb', 'bb')) else 'absolute'])
 
     def _get_data(self):
         """
-        Format data
+        Format data received from http request
         :return: dict
         """
-        parsed = self._get_parsed_data()
-        # if parsed is None or len(parsed) == 0:
-        if not parsed:
-            return None
-
-        data = {}
-        for node in parsed[1:]:
-            try:
-                prefix = node[0] + "_" + node[1] + "_"
-            except IndexError:
-                continue
-            for i in range(len(ORDER)):
-                try:
-                    data[prefix + ORDER[i]] = int(node[int(POSITION[i])])
-                except ValueError:
-                    pass
-
-        # if len(data) == 0:
-        if not data:
-            return None
-        return data
-
-    def _check_raw_data(self, data):
-        # FIXME
-        return True
-
-    def _create_definitions(self):
-        try:
-            data = self._get_parsed_data()[1:]
-        except TypeError:
-            return False
-
-        # create order
-        all_pxnames = []
-        all_svnames = {}
-        last_pxname = ""
-        for node in data:
-            try:
-                pxname = node[0]
-                svname = node[1]
-            except IndexError:
-                continue
-            if pxname != last_pxname:
-                all_pxnames.append(pxname)
-                all_svnames[pxname] = [svname]
-                for key in ORDER:
-                    # order entry consists of pxname, "_", and column name (like qcur)
-                    self.order.append(pxname + "_" + key)
-            else:
-                all_svnames[pxname].append(svname)
-            last_pxname = pxname
-
-        # create definitions
-        for pxname in all_pxnames:
-            for name in ORDER:
-                options = list(CHARTS[name]['options'])
-                options[3] = pxname
-                options[4] = pxname + "." + name
-                line_template = CHARTS[name]['lines'][0]
-                lines = []
-                # omit_first = False
-                # if len(all_svnames[pxname]) > 1:
-                #     omit_first = True
-                for svname in all_svnames[pxname]:
-                    # if omit_first:
-                    #     omit_first = False
-                    #     continue
-                    tmp = list(line_template)
-                    # tmp[0] = pxname + "_" + svname + "_" + name
-                    tmp[0] = "_".join([pxname, svname, name])
-                    tmp[1] = svname
-                    lines.append(tmp)
-                self.definitions[pxname + "_" + name] = {'options': options, 'lines': lines}
-
-        return True
-
-    def check(self):
-        if self.use_socket:
-            SocketService.check(self)
-        else:
-            UrlService.check(self)
+        if self.url[-4:] != ';csv':
+            self.url += ';csv'
+            self.info('Url rewritten to %s' % self.url)
 
         try:
-            return self._create_definitions()
+            raw_data = self._get_raw_data().splitlines()
         except Exception as e:
-            self.debug(str(e))
-            return False
+            self.error(str(e))
+            return None
+
+        all_instances = [dict(zip(raw_data[0].split(','), raw_data[_].split(','))) for _ in range(1, len(raw_data))]
+
+        back_ends = [backend for backend in all_instances
+                     if backend['svname'] == 'BACKEND' and backend['# pxname'] != 'stats']
+        front_ends = [frontend for frontend in all_instances
+                      if frontend['svname'] == 'FRONTEND' and frontend['# pxname'] != 'stats']
+
+        if self.charts:
+            self.create_charts(front_ends, back_ends)
+            self.charts = False
+
+        to_netdata = dict()
+
+        for frontend in front_ends:
+            for _ in self.order_front:
+                to_netdata.update({'_'.join([_, frontend['# pxname']]): int(frontend[_[1:]]) if frontend.get(_[1:]) else 0})
+
+        for backend in back_ends:
+            for _ in self.order_back:
+                to_netdata.update({'_'.join([_, backend['# pxname']]): int(backend[_[1:]]) if backend.get(_[1:]) else 0})
+
+        return to_netdata
