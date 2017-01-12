@@ -86,6 +86,25 @@
       line: '        killproc -p ${PIDFILE} $DAEMON_PATH/$DAEMON && sleep 1'
     when: ansible_lsb.major_release == '12'
 
+
+  - block:
+
+    - name: "Add NetData User to HaProxy Group"
+      user:
+        name: 'netdata'
+        groups: 'haproxy'
+        append: yes
+
+    - name: "Configure HaProxy Plugin"
+      copy:
+        src: 'haproxy.conf'
+        dest: '/etc/netdata/python.d/haproxy.conf'
+        owner: 'netdata'
+        group: 'netdata'
+        mode: '660'
+
+    when: groups['proxyserver'] is defined and inventory_hostname in groups['proxyserver']
+
   - block:
 
     - name: "Enable Apache Status Module"
