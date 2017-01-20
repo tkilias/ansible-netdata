@@ -1,0 +1,8 @@
+---
+# file: roles/netdata/tasks/varnish.yml
+
+- name: "Add NetData User to Varnish Group"
+  user:
+    name: 'netdata'
+    groups: 'varnish'
+    append: yes

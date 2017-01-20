@@ -1,0 +1,60 @@
+---
+# file: roles/netdata/tasks/configure.yml
+
+- name: "Add User to Admins"
+  user:
+    name: 'netdata'
+    groups: 'adm'
+    append: yes
+
+- name: "Configure Registry"
+  ini_file:
+    dest: '/etc/netdata/netdata.conf'
+    create: yes
+    section: 'registry'
+    option: '{{ item.option }}'
+    value: '{{ item.value }}'
+  with_items:
+    - option: 'enabled'
+      value: '{{ (netdata_registry|default("pmon1") == inventory_hostname)|ternary("yes", "no") }}'
+    - option: 'registry to announce'
+      value: 'http://{{ netdata_registry|default("pmon1") }}:19999'
+  notify:
+    - "Restart NetData"
+
+- name: "Configure NetData"
+  template:
+    src: '{{ item }}'
+    dest: '/etc/netdata/{{ item }}'
+    owner: 'root'
+    group: 'root'
+    mode: 644
+    backup: yes
+  with_items:
+    - 'health_alarm_notify.conf'
+  notify:
+    - "Restart NetData"
+
+- name: "Patch Startup Script"
+  lineinfile:
+    dest: '/etc/init.d/netdata'
+    regexp: 'killproc -p \$\{PIDFILE\} \$DAEMON_PATH/\$DAEMON'
+    line: '        killproc -p ${PIDFILE} $DAEMON_PATH/$DAEMON && sleep 1'
+  when: ansible_lsb.major_release == '12'
+
+- name: "Check if KSM is available"
+  stat: path='/sys/kernel/mm/ksm'
+  register: ksm
+
+# Note: copy module doesn't work here because parent directory /sys
+# is not writable, not even by root
+- name: "Configure KSM"
+  shell: echo {{ item.value }} >/sys/kernel/mm/ksm/{{ item.file }}
+  with_items:
+    - file: 'run'
+      value: '1'
+    - file: 'sleep_millisecs'
+      value: '1000'
+  when: ksm.stat.exists
+  notify:
+    - "Restart NetData"

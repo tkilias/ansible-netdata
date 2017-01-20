@@ -1,0 +1,16 @@
+---
+# file: roles/netdata/tasks/haproxy.yml
+
+- name: "Add NetData User to HaProxy Group"
+  user:
+    name: 'netdata'
+    groups: 'haproxy'
+    append: yes
+
+- name: "Configure HaProxy Plugin"
+  copy:
+    src: 'haproxy.conf'
+    dest: '/etc/netdata/python.d/haproxy.conf'
+    owner: 'netdata'
+    group: 'netdata'
+    mode: '660'

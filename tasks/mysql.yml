@@ -1,0 +1,10 @@
+---
+# file: roles/netdata/tasks/mysql.yml
+
+- name: "Configure Plugin: MySQL"
+  replace:
+    dest: '/etc/netdata/python.d/mysql.conf'
+    regexp: '#[\s]*pass[\s]*:[\s]*'''''
+    replace: 'pass     : ''{{ mysql_root_password|default("root") }}'''
+  notify:
+    - "Restart NetData"

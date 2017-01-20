@@ -1,0 +1,36 @@
+---
+# file: roles/netdata/tasks/prepare.yml
+
+- name: "Install required packages"
+  apt:
+    pkg: '{{ item }}'
+    state: 'installed'
+    update_cache: yes
+  with_items:
+    - 'zlib1g-dev'
+    - 'gcc'
+    - 'make'
+    - 'git'
+    - 'autoconf'
+    - 'autogen'
+    - 'automake'
+    - 'pkg-config'
+    - 'uuid-dev'
+    - 'python-dev'
+    - 'python-yaml'
+
+- name: "Remove existing components"
+  file:
+    path: '{{ item }}'
+    state: 'absent'
+  with_items:
+    - '/opt/netdata'
+    - '/etc/netdata'
+    - '/etc/init.d/netdata'
+    - '/etc/logrotate.d/netdata'
+  when: netdata_force_reset
+
+- name: "Ensure Directory"
+  file:
+    path: '/etc/netdata/python.d'
+    state: 'directory'
