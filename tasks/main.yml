@@ -89,6 +89,16 @@
 
   - block:
 
+    - name: "Add NetData User to Varnish Group"
+      user:
+        name: 'netdata'
+        groups: 'varnish'
+        append: yes
+
+    when: groups['varnishserver'] is defined and inventory_hostname in groups['varnishserver']
+
+  - block:
+
     - name: "Add NetData User to HaProxy Group"
       user:
         name: 'netdata'
