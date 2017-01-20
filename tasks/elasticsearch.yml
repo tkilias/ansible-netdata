@@ -1,0 +1,10 @@
+---
+# file: roles/netdata/tasks/elasticsearch.yml
+
+- name: "Configure ElasticSearch Plugin"
+  copy:
+    src: 'elasticsearch.conf'
+    dest: '/etc/netdata/python.d/elasticsearch.conf'
+    owner: 'netdata'
+    group: 'netdata'
+    mode: '660'

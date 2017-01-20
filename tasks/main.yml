@@ -16,6 +16,9 @@
   - include: apache.yml
     when: groups['webserver'] is defined and inventory_hostname in groups['webserver']
 
+  - include: elasticsearch.yml
+    when: groups['logserver'] is defined and inventory_hostname in groups['logserver']
+
   - include: haproxy.yml
     when: groups['proxyserver'] is defined and inventory_hostname in groups['proxyserver']
 
