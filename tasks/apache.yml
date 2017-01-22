@@ -10,7 +10,7 @@
 - name: "Apache Status Site"
   template:
     src: 'apache.conf'
-    dest: '/etc/apache2/sites-available/status{{ apache_conf_ext|default('.conf') }}'
+    dest: '/etc/apache2/sites-available/status{{ apache_conf_ext|default(".conf") }}'
     owner: 'root'
     group: 'root'
     mode: 644
