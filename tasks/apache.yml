@@ -13,7 +13,7 @@
     dest: '/etc/apache2/sites-available/status{{ apache_conf_ext|default(".conf") }}'
     owner: 'root'
     group: 'root'
-    mode: 644
+    mode: '644'
   notify: "Restart Apache"
 
 - name: "Enable Apache Status Site"
