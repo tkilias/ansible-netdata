@@ -19,3 +19,11 @@
 - name: "Enable Apache Status Site"
   command: a2ensite status creates=/etc/apache2/sites-enabled/status{{ apache_conf_ext|default('.conf') }}
   notify: "Restart Apache"
+
+- name: "Weblog Module Configuration"
+  template:
+    src: 'web_log.conf'
+    dest: '/etc/netdata/python.d/web_log.conf'
+    owner: 'netdata'
+    group: 'netdata'
+    mode: '660'

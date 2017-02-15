@@ -32,6 +32,7 @@
     backup: yes
   with_items:
     - 'health_alarm_notify.conf'
+    - 'python.d.conf'
   notify:
     - "Restart NetData"
 
