@@ -40,7 +40,7 @@
   lineinfile:
     dest: '/etc/init.d/netdata'
     regexp: 'killproc -p \$\{PIDFILE\} \$DAEMON_PATH/\$DAEMON'
-    line: '        killproc -p ${PIDFILE} $DAEMON_PATH/$DAEMON && sleep 1'
+    line: '        killproc -p ${PIDFILE} $DAEMON_PATH/$DAEMON && sleep 3'
   when: ansible_lsb.major_release == '12'
 
 - name: "Check if KSM is available"
