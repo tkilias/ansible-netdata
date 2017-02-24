@@ -25,7 +25,7 @@
   - include: mysql.yml
     when: groups['dbserver-mysql'] is defined and inventory_hostname in groups['dbserver-mysql']
 
-  - include: softnet.yml
+  - include: silent.yml
 
   - include: varnish.yml
     when: groups['varnishserver'] is defined and inventory_hostname in groups['varnishserver']

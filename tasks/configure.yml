@@ -26,8 +26,8 @@
   template:
     src: '{{ item }}'
     dest: '/etc/netdata/{{ item }}'
-    owner: 'root'
-    group: 'root'
+    owner: 'netdata'
+    group: 'netdata'
     mode: '644'
     backup: yes
   with_items:
