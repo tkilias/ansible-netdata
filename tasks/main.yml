@@ -5,29 +5,26 @@
   set_fact: role_netdata_started=true
   tags: always
 
-- block:
+- include: prepare.yml
 
-  - include: prepare.yml
+- include: install.yml
 
-  - include: install.yml
+- include: configure.yml
 
-  - include: configure.yml
+- include: apache.yml
+  when: groups['webserver'] is defined and inventory_hostname in groups['webserver']
 
-  - include: apache.yml
-    when: groups['webserver'] is defined and inventory_hostname in groups['webserver']
+- include: elasticsearch.yml
+  when: groups['logserver'] is defined and inventory_hostname in groups['logserver']
 
-  - include: elasticsearch.yml
-    when: groups['logserver'] is defined and inventory_hostname in groups['logserver']
+- include: haproxy.yml
+  when: groups['proxyserver'] is defined and inventory_hostname in groups['proxyserver']
 
-  - include: haproxy.yml
-    when: groups['proxyserver'] is defined and inventory_hostname in groups['proxyserver']
+- include: mysql.yml
+  when: groups['dbserver-mysql'] is defined and inventory_hostname in groups['dbserver-mysql']
 
-  - include: mysql.yml
-    when: groups['dbserver-mysql'] is defined and inventory_hostname in groups['dbserver-mysql']
+- include: silent.yml
 
-  - include: silent.yml
+- include: varnish.yml
+  when: groups['varnishserver'] is defined and inventory_hostname in groups['varnishserver']
 
-  - include: varnish.yml
-    when: groups['varnishserver'] is defined and inventory_hostname in groups['varnishserver']
-
-  when: '"netdata" not in excluded_roles'

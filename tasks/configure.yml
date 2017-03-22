@@ -36,26 +36,26 @@
   notify:
     - "Restart NetData"
 
-- name: "Patch Startup Script"
-  lineinfile:
-    dest: '/etc/init.d/netdata'
-    regexp: 'killproc -p \$\{PIDFILE\} \$DAEMON_PATH/\$DAEMON'
-    line: '        killproc -p ${PIDFILE} $DAEMON_PATH/$DAEMON && sleep 3'
-  when: ansible_lsb.major_release == '12'
+# - name: "Patch Startup Script"
+#   lineinfile:
+#     dest: '/etc/init.d/netdata'
+#     regexp: 'killproc -p \$\{PIDFILE\} \$DAEMON_PATH/\$DAEMON'
+#     line: '        killproc -p ${PIDFILE} $DAEMON_PATH/$DAEMON && sleep 3'
+#   when: ansible_lsb.major_release == '12'
 
 - name: "Check if KSM is available"
   stat: path='/sys/kernel/mm/ksm'
   register: ksm
 
-# Note: copy module doesn't work here because parent directory /sys
-# is not writable, not even by root
-- name: "Configure KSM"
-  shell: echo {{ item.value }} >/sys/kernel/mm/ksm/{{ item.file }}
-  with_items:
-    - file: 'run'
-      value: '1'
-    - file: 'sleep_millisecs'
-      value: '1000'
-  when: ksm.stat.exists
-  notify:
-    - "Restart NetData"
+# # Note: copy module doesn't work here because parent directory /sys
+# # is not writable, not even by root
+# - name: "Configure KSM"
+#   shell: echo {{ item.value }} >/sys/kernel/mm/ksm/{{ item.file }}
+#   with_items:
+#     - file: 'run'
+#       value: '1'
+#     - file: 'sleep_millisecs'
+#       value: '1000'
+#   when: ksm.stat.exists
+#   notify:
+#     - "Restart NetData"

@@ -2,22 +2,19 @@
 # file: roles/netdata/tasks/prepare.yml
 
 - name: "Install required packages"
-  apt:
+  yum:
     pkg: '{{ item }}'
     state: 'installed'
     update_cache: yes
   with_items:
-    - 'zlib1g-dev'
-    - 'gcc'
-    - 'make'
-    - 'git'
-    - 'autoconf'
-    - 'autogen'
-    - 'automake'
-    - 'pkg-config'
-    - 'uuid-dev'
-    - 'python-dev'
-    - 'python-yaml'
+      - zlib-devel
+      - gcc
+      - make
+      - git
+      - autoconf
+      - automake
+      - pkgconfig
+      - libuuid-devel
 
 - name: "Remove existing components"
   file:

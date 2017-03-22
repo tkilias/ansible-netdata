@@ -1,15 +1,15 @@
 ---
 # file: roles/netdata/tasks/silent.yml
 
-- name: "Make alerts silent"
-  replace:
-    dest: '/etc/netdata/health.d/{{ item }}.conf'
-    regexp: ' to: .*$'
-    replace: ' to: silent'
-    backup: yes
-  with_items:
-    - 'softnet'
-    - 'tcp_resets'
-    - 'udp_errors'
-  notify:
-    - "Restart NetData"
+# - name: "Make alerts silent"
+#   replace:
+#     dest: '/etc/netdata/health.d/{{ item }}.conf'
+#     regexp: ' to: .*$'
+#     replace: ' to: silent'
+#     backup: yes
+#   with_items:
+#     - 'softnet'
+#     - 'tcp_resets'
+#     - 'udp_errors'
+#   notify:
+#     - "Restart NetData"
